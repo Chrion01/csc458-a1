@@ -18,6 +18,25 @@
 */
 void sr_arpcache_sweepreqs(struct sr_instance *sr) { 
     /* Fill this in */
+    pthread_mutex_lock(&((sr->cache).lock));
+    struct sr_arpcache cache = sr->cache;
+    struct sr_arpreq *request = cache.requests;
+    if(difftime(time(NULL),request->sent) > 1){
+        if (request->times_sent >= 5){
+            /*send icmp host unreachable to source addr of all pkts waiting on this request*/
+            sr_arpreq_destroy(&(sr->cache), (sr->cache).requests);
+        }
+        else{
+            request->times_sent++;
+            request->sent = time(NULL);
+        }
+    }
+    
+
+
+
+    pthread_mutex_unlock(&((sr->cache).lock));
+
 }
 
 /* You should not need to touch the rest of this code. */
